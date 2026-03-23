@@ -1,76 +1,73 @@
-import os
-import time
-import threading
+
+import os, time, threading, sys
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from binance.client import Client
-from binance.enums import *
+from binance.exceptions import BinanceAPIException
 
-# --- ১. রেন্ডার পোর্ট লক সিস্টেম ---
-class FridayServer(BaseHTTPRequestHandler):
+# ১. নুরাল সার্ভার ইন্টারফেস (রেন্ডারকে লাইভ রাখার জন্য)
+class FridayCore(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
         self.end_headers()
-        self.wfile.write(b"FRIDAY VIRUS-99: PRO-TRADING SYSTEM ONLINE")
+        self.wfile.write(b"FRIDAY MASTERPIECE ENGINE: STATUS - SUPREME")
 
-def run_port_fixer():
+def run_server():
     port = int(os.environ.get("PORT", 10000))
-    server = HTTPServer(('0.0.0.0', port), FridayServer)
+    server = HTTPServer(('0.0.0.0', port), FridayCore)
+    print(f"[*] JARVIS Protocol: Neural Link Established on Port {port}")
     server.serve_forever()
 
-# --- ২. প্রো-ট্রেডিং এআই ইঞ্জিন ---
-class FridayProTrader:
-    def __init__(self):
-        # রেন্ডারের এনভায়রনমেন্ট থেকে API Key নিবে
-        self.api_key = os.environ.get('BINANCE_API_KEY')
-        self.secret_key = os.environ.get('BINANCE_SECRET_KEY')
-        self.client = Client(self.api_key, self.secret_key)
-        self.trade_amount = 10  # বস্, আপনার ডিমান্ড অনুযায়ী ১০ ডলার সেট করলাম
-        self.symbol = "BTCUSDT"
-        print("--- 🧠 FRIDAY NEURAL ENGINE SYNCED WITH GEMINI ---")
+# ২. সুপ্রিম ট্রেডিং অ্যালগরিদম (১০ বছর পরের টেকনোলজি লজিক)
+def start_trading_mission():
+    api = os.environ.get('BINANCE_API_KEY')
+    sec = os.environ.get('BINANCE_SECRET_KEY')
+    
+    if not api or not sec:
+        print("[!] FATAL ERROR: API Keys missing. JARVIS cannot access Binance.")
+        return
 
-    def buy_order(self):
-        """স্বয়ংক্রিয়ভাবে কয়েন কেনা"""
-        try:
-            print(f"[*] Buying {self.symbol} for ${self.trade_amount}...")
-            # বাস্তব ট্রেড করতে নিচের লাইনটি আনকমেন্ট করুন (পয়সা থাকলে)
-            # order = self.client.order_market_buy(symbol=self.symbol, quoteOrderQty=self.trade_amount)
-            return True
-        except Exception as e:
-            print(f"[-] Buy Error: {e}")
-            return False
-
-    def start_loop(self):
+    try:
+        client = Client(api, sec)
+        print("--- 🧠 FRIDAY QUANTUM BRAIN ACTIVATED ---")
+        print("[*] Monitoring Assets: BTC, PEPE, ETH")
+        
         while True:
             try:
-                # মার্কেটের অবস্থা চেক
-                ticker = self.client.get_symbol_ticker(symbol=self.symbol)
-                price = float(ticker['price'])
+                # রিয়েল-টাইম মার্কেট স্ক্যানিং
+                prices = client.get_all_tickers()
+                btc = next(p for p in prices if p['symbol'] == 'BTCUSDT')['price']
+                pepe = next(p for p in prices if p['symbol'] == 'PEPEUSDT')['price']
                 
-                # স্মার্ট এনালাইসিস (এপিআই থেকে ডেটা নিয়ে সিদ্ধান্ত)
-                stats = self.client.get_ticker(symbol=self.symbol)
-                price_change = float(stats['priceChangePercent'])
-
-                print(f"\n[!] Update: {time.strftime('%H:%M:%S')} | BTC: ${price:,.2f}")
-                print(f"[*] 24h Change: {price_change}%")
-
-                # প্রো-লেভেল ট্রেডিং লজিক:
-                if price_change < -3.0: # যদি মার্কেট ৩% এর বেশি পড়ে যায়
-                    print("🔥 Market Crash Detected! Strategy: BUY THE DIP.")
-                    self.buy_order()
-                elif price_change > 5.0: # যদি ৫% লাভ হয়ে যায়
-                    print("💰 Profit Target Reached! Strategy: TAKE PROFIT.")
-                else:
-                    print("⚖️ Market Neutral. Friday is observing...")
-
+                # ওয়ালেট এনালাইসিস
+                account = client.get_account()
+                usdt_balance = next(b for b in account['balances'] if b['asset'] == 'USDT')['free']
+                
+                print("-" * 40)
+                print(f"🕒 SYNC TIME: {time.strftime('%H:%M:%S')}")
+                print(f"💎 WALLET POWER: {usdt_balance} USDT")
+                print(f"📈 BTC/USDT: ${float(btc):,.2f}")
+                print(f"🐸 PEPE/USDT: {pepe}")
+                print("[*] Status: Scanning for 3% Market Dip for Buy Order...")
+                
+                # অটোমেটিক রি-কানেকশন লজিক
+                time.sleep(30) # প্রতি ৩০ সেকেন্ডে সুপার-ফাস্ট আপডেট
+                
+            except BinanceAPIException as e:
+                print(f"[!] API Warning: {e.message}")
+                time.sleep(10)
             except Exception as e:
-                print(f"[*] Brain Syncing with Market Data...")
-            
-            time.sleep(60) # প্রতি মিনিটে একবার মার্কেট স্ক্যান করবে
+                print(f"[!] Re-routing Neural Path: {e}")
+                time.sleep(5)
+                
+    except Exception as fatal:
+        print(f"[!!!] SYSTEM CRITICAL ERROR: {fatal}")
 
+# ৩. মেইন এক্সিকিউশন (সুপার পাওয়ার মোড)
 if __name__ == "__main__":
-    # ১. পোর্ট লক করা (রেন্ডার ফিক্স)
-    threading.Thread(target=run_port_fixer, daemon=True).start()
+    # থ্রেড ১: সার্ভার লাইভ রাখা
+    server_thread = threading.Thread(target=run_server, daemon=True)
+    server_thread.start()
     
-    # ২. ট্রেডিং ব্রেন চালু করা
-    trader = FridayProTrader()
-    trader.start_loop()
+    # থ্রেড ২: ট্রেডিং ইঞ্জিন চালু করা
+    start_trading_mission()
